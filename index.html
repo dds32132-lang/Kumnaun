@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="th">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="เครื่องคำนวณความต้านทานออนไลน์ คำนวณค่าความต้านทานจากแถบสี" />
+    <meta name="keywords" content="resistor,calculator,ความต้านทาน,คำนวณ,แถบสี" />
+    <title>เครื่องคำนวณความต้านทาน</title>
+    <!-- แก้ไขพาธไฟล์ไอคอน -->
+    <link rel="icon" href="assets/images/favicon.ico" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="brand">
+            <!-- ไอคอน SVG แบบเรียบเท่ (ยังคงอยู่) -->
+            <svg class="electric-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M13 3v9h3l-6 12V13H7l6-10z"/>
+            </svg>
+        </div>
+        <div class="header-actions">
+            <!-- ปุ่มใหม่: ธีม (สลับระหว่างโหมดมืด/สว่าง) -->
+            <button id="themeToggle" class="btn subtle">ธีม</button>
+            <!-- ปุ่มประวัติ (แสดงจำนวนรายการประวัติการคำนวณ) -->
+            <button id="historyBtn" class="btn primary">ประวัติ (<span id="historyCount">0</span>)</button>
+            <!-- ปุ่มช่วยเหลือ (เปิดโมดัลวิธีการใช้งาน) -->
+            <button id="helpBtn" class="btn subtle" title="วิธีใช้งาน">วิธีใช้</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="calculator">
+            <h1>คำนวณค่าความต้านทาน</h1>
+
+            <div class="controls">
+                <label>จำนวนแถบ:
+                    <label><input type="radio" name="bands" value="4" checked> 4 แบนด์</label>
+                    <label><input type="radio" name="bands" value="5"> 5 แบนด์</label>
+                </label>
+
+                <div class="band-row">
+                    <label>แบนด์ที่ 1
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <select id="band1"></select>
+                            <input id="band1Num" type="number" min="0" max="9" placeholder="0-9" style="width:60px" />
+                        </div>
+                    </label>
+                    <label>แบนด์ที่ 2
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <select id="band2"></select>
+                            <input id="band2Num" type="number" min="0" max="9" placeholder="0-9" style="width:60px" />
+                        </div>
+                    </label>
+                    <label id="band3-wrap" style="display:none">แบนด์ที่ 3
+                        <select id="band3"></select>
+                    </label>
+                    <label>มัลติพลายเออร์
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <select id="multiplier"></select>
+                            <input id="multiplierNum" type="text" placeholder="เช่น 1k, 1000, 0.01" style="width:120px" />
+                        </div>
+                    </label>
+                    <label>ความคลาดเคลื่อน
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <select id="tolerance"></select>
+                            <!-- ช่องกรอกแบบกำหนดเอง -->
+                            <input id="toleranceCustom" type="number" step="0.1" min="0" placeholder="เช่น 1 (%)" style="width:110px;display:none" />
+                        </div>
+                    </label>
+                </div>
+
+                <!-- เพิ่ม: พื้นที่แสดงตัวเลขของแถบสี -->
+                <div id="bandNumbers" class="band-numbers small" aria-live="polite">ตัวเลขแถบ: -   มัลติพลายเออร์: -   ความคลาดเคลื่อน: -</div>
+
+                <div class="actions">
+                    <button id="calcBtn" class="btn primary">คำนวณ</button>
+                    <button id="resetBtn" class="btn subtle">รีเซ็ต</button>
+                </div>
+            </div>
+
+            <div class="result-panel">
+                <div class="resistor-preview" id="resistorPreview" aria-hidden="true">
+                    <!-- แถบสีตัวอย่าง -->
+                    <!-- SVG ตกแต่งเบื้องหลังเพื่อความเท่ (pointer-events:none เพื่อไม่ขัดกับการคลิกแถบ) -->
+                    <svg class="resistor-decor" viewBox="0 0 300 60" aria-hidden="true" focusable="false">
+                        <defs>
+                            <linearGradient id="lg2" x1="0" x2="1">
+                                <stop offset="0" stop-color="#00b3ff" stop-opacity="0.12"/>
+                                <stop offset="1" stop-color="#0066cc" stop-opacity="0.06"/>
+                            </linearGradient>
+                        </defs>
+                        <rect x="0" y="0" width="100%" height="100%" rx="8" fill="url(#lg2)"/>
+                        <g stroke="#0088d1" stroke-opacity="0.18" stroke-width="1">
+                            <path d="M10 45 q40 -30 80 0 q40 -30 80 0 q40 -30 100 0" fill="none"/>
+                        </g>
+                    </svg>
+
+                    <!-- เพิ่ม: โครงแถบสีเริ่มต้น (จะถูกสคริปต์อัปเดตเมื่อมีการคำนวณ/คลิก) -->
+                    <div class="resistor-body" aria-hidden="false">
+                        <div style="width:6%"></div>
+                        <!-- แบนด์ที่ 1 (น้ำตาล) -->
+                        <div class="band" data-role="b1" title="น้ำตาล — คลิกเพื่อเปลี่ยน" style="background:#6b4a2f"></div>
+                        <!-- แบนด์ที่ 2 (ดำ) -->
+                        <div class="band" data-role="b2" title="ดำ — คลิกเพื่อเปลี่ยน" style="background:#000000"></div>
+                        <!-- (ถ้าเป็น 5 แบนด์ จะถูกแทนที่โดยสคริปต์) -->
+                        <!-- มัลติพลายเออร์ (น้ำตาล = ×10) -->
+                        <div class="band" data-role="mult" title="น้ำตาล (×10) — คลิกเพื่อเปลี่ยน" style="background:#6b4a2f"></div>
+                        <!-- ความคลาดเคลื่อน (ทอง = ±5%) -->
+                        <div class="band" data-role="tol" title="ทอง (±5%) — คลิกเพื่อเปลี่ยน" style="background:#d4af37"></div>
+                    </div>
+
+                    <!-- แก้ไขพาธรูปตัวอย่างตัวต้านทาน หรือลบออกถ้าไม่มีไฟล์ -->
+                    <img src="assets/images/resistor-sample.png" alt="ตัวอย่างความต้านทาน" class="preview-img" loading="lazy" />
+                </div>
+                <div class="small" style="margin-top:8px">คลิกที่แถบตัวอย่างเพื่อเปลี่ยนสี</div>
+                <div class="result">
+                    <div>ค่าที่คำนวณได้: <span id="resultValue">-</span>
+                        <button id="copyResult" class="btn subtle copy-btn" title="คัดลอกผล">คัดลอก</button>
+                    </div>
+                    <div>ช่วงค่าตามความคลาดเคลื่อน: <span id="resultRange">-</span></div>
+                </div>
+            </div>
+
+            <!-- คำแนะนำสั้นสำหรับผู้เริ่มต้น -->
+            <div class="hint small" style="margin-top:10px;color:var(--muted)">
+                ขั้นตอนง่าย ๆ: เลือกสีแถบหรือพิมพ์ตัวเลข → ระบบคำนวณอัตโนมัติ → กด "คัดลอก" เพื่อเก็บค่า
+            </div>
+
+            <!-- ส่วนจัดการรูปภาพเพิ่มเติม -->
+            <div class="image-tools" style="margin-top:12px">
+                <input id="imageUpload" type="file" accept="image/*" multiple style="display:none" />
+                <!-- ปุ่มไอคอน: เพิ่มรูป (icon ถูกเอาออก แทนด้วย sr-only) -->
+                <button id="chooseImages" class="btn subtle" title="เพิ่มรูป" aria-label="เพิ่มรูป">
+                    <span class="sr-only">เพิ่มรูป</span>
+                </button>
+
+                <!-- ปุ่ม: เพิ่มรูปตัวอย่างจากเว็บ (เอาไอคอนออก) -->
+                <button id="addRemote" class="btn subtle" title="เพิ่มรูปตัวอย่าง" aria-label="เพิ่มรูปตัวอย่าง">
+                    <span class="sr-only">เพิ่มรูปตัวอย่าง</span>
+                </button>
+
+                <!-- ปุ่ม: ล้างรูปทั้งหมด (เอาไอคอนออก) -->
+                <button id="clearImages" class="btn subtle" title="ล้างรูปทั้งหมด" aria-label="ล้างรูปทั้งหมด">
+                    <span class="sr-only">ล้างรูปทั้งหมด</span>
+                </button>
+
+                <div id="imageGallery" class="image-gallery" aria-live="polite" style="margin-top:8px"></div>
+            </div>
+        </section>
+
+        <!-- แผงประวัติการคำนวณ (แทนที่ตะกร้า) -->
+        <aside class="history-panel" id="historyPanel" aria-hidden="true">
+            <div class="cart-header">
+                <h3>ประวัติการคำนวณ</h3>
+                <button id="closeHistory" class="btn subtle">ปิด</button>
+            </div>
+
+            <ul id="historyItems" class="cart-items"></ul>
+
+            <div class="cart-footer">
+                <div class="small">บันทึกล่าสุดจะแสดงด้านบน</div>
+                <button id="clearHistoryBtn" class="btn subtle">ล้างประวัติ</button>
+            </div>
+        </aside>
+    </main>
+
+    <!-- พาเลตต์สี (ป๊อปอัพ) -->
+    <div id="colorPalette" class="color-palette" aria-hidden="true" role="dialog"></div>
+
+    <!-- โมดัลช่วยเหลือ -->
+    <div id="helpModal" class="help-modal" aria-hidden="true" role="dialog" aria-label="วิธีการใช้งาน">
+        <div class="help-content">
+            <button id="closeHelp" class="btn subtle" aria-label="ปิด">ปิด</button>
+            <h3>วิธีใช้งาน (รวดเร็ว)</h3>
+            <ol>
+                <li>เลือกจำนวนแบนด์ (4 หรือ 5)</li>
+                <li>เลือกสีแต่ละแถบ หรือพิมพ์ตัวเลขตรงช่อง (สำหรับมือใหม่)</li>
+                <li>เลือกมัลติพลายเออร์ (หรือพิมพ์ เช่น 4k, 1M)</li>
+                <li>ถ้าต้องการความคลาดเคลื่อนพิเศษ ให้เลือก "กำหนดเอง" แล้วพิมพ์ค่า %</li>
+                <li>ผลจะคำนวณอัตโนมัติ — กด "คัดลอก" เพื่อเก็บผล</li>
+            </ol>
+            <div class="small">คำแนะนำเพิ่มเติม: คลิกแถบสีในตัวอย่างเพื่อเปลี่ยนสีเร็ว ๆ</div>
+        </div>
+    </div>
+
+    <script src="app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+:root{
+  --bg:#000; --panel:#0b0b0b; --text:#e6eef8;
+  --muted:#9aa6b2; --accent:#00bcd4; --card:#111214;
+  --radius:10px;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,#000,#050505);color:var(--text)}
+.container{max-width:900px;margin:32px auto;padding:20px}
+.site-header{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+.brand{font-weight:700;font-size:1.2rem;color:var(--accent)}
+.site-header .brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.site-header .brand .electric-icon {
+  width: 32px;
+  height: 32px;
+  color: #ffd700;
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.5));
+  transition: all 0.3s ease;
+}
+
+.site-header .brand .electric-icon:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.7));
+}
+
+/* ลบหรือซ่อน span ที่แสดงข้อความ */
+.site-header .brand span {
+  display: none;
+}
+
+.calculator{position:relative;background:linear-gradient(180deg,var(--panel),#0a0a0a);padding:20px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.6);overflow:hidden}
+.controls h1{margin:0 0 12px 0}
+.controls{display:flex;flex-direction:column;gap:12px}
+.band-row{display:flex;flex-wrap:wrap;gap:12px}
+label{display:flex;flex-direction:column;font-size:0.95rem;color:var(--muted)}
+select{min-width:140px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:#0b0b0b;color:var(--text)}
+.actions{display:flex;gap:8px;margin-top:8px}
+.btn{padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+.btn.primary{background:linear-gradient(90deg,var(--accent),#00e5ff);color:#001821}
+.btn.subtle{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+.result-panel{display:flex;gap:20px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.resistor-preview{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(135deg, #0a1620, #000810);
+  box-shadow:0 12px 32px rgba(0,0,0,0.4);
+}
+.resistor-preview .resistor-decor{
+	position:absolute;left:8px;right:8px;top:8px;bottom:8px;width:calc(100% - 16px);height:calc(100% - 16px);pointer-events:none;opacity:0.95;mix-blend-mode:screen
+}
+.resistor-body{
+  position:relative;
+  z-index:2;
+  background:linear-gradient(90deg, #1a1a1a, #262626);
+  box-shadow:0 6px 18px rgba(0,0,0,0.6);
+}
+.band{
+  transition:all 0.3s ease;
+  box-shadow:0 0 20px rgba(255,140,0,0.2);
+}
+.band:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 25px rgba(255,140,0,0.4);
+}
+.band-numbers{
+	color:var(--muted);
+	font-size:0.95rem;
+	margin-top:8px;
+	display:block;
+}
+@media (max-width:600px){ .band-row{flex-direction:column} .resistor-body{width:90%} }
+@media (max-width:900px){
+	.history-panel{width:100%;height:auto;position:relative}
+}
+
+/* เพิ่มสไตล์สำหรับพาเลตต์สีและสวอช */
+.color-palette{
+	position:fixed;
+	display:none;
+	gap:8px;
+	padding:10px;
+	background:linear-gradient(180deg,var(--panel),#07131a);
+	border-radius:8px;
+	box-shadow:0 8px 30px rgba(0,0,0,0.6);
+	z-index:60;
+	max-width:320px;
+	flex-wrap:wrap;
+}
+.color-palette .swatch{
+	width:28px;height:18px;border-radius:4px;margin:6px;cursor:pointer;border:1px solid rgba(255,255,255,0.06);
+}
+.color-palette .swatch-label{font-size:0.75rem;color:var(--muted);margin-top:6px;text-align:center}
+.color-palette .palette-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+
+/* ให้ pointer ชัดเจนบนแถบตัวอย่าง */
+.resistor-body .band{cursor:pointer}
+
+.band-row input[type="number"],
+.band-row input[type="text"],
+input#toleranceCustom{
+	padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:#0b0b0b;color:var(--text);
+}
+
+/* เพิ่มสไตล์สำหรับปุ่มคัดลอก, โมดัลช่วยเหลือ และ toast แจ้งเตือน */
+.copy-btn{margin-left:10px;padding:6px 8px;font-size:0.85rem}
+.help-modal{
+	position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:90%;max-width:520px;
+	background:linear-gradient(180deg,var(--panel),#07131a);padding:18px;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,0.7);
+	z-index:120;display:none;
+}
+.help-modal .help-content{position:relative}
+.help-modal .help-content h3{margin-top:0;color:var(--accent)}
+.help-modal .help-content button{position:absolute;right:12px;top:12px}
+.help-modal[aria-hidden="false"]{display:block}
+
+/* toast */
+.toast{
+	position:fixed;right:20px;bottom:24px;background:#0c1620;color:#e6eef8;padding:10px 14px;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.6);z-index:200;font-weight:600}
+.hint{margin-top:6px}
+
+/* เข้าใจง่าย: ให้ปุ่มมี focus เห็นชัดสำหรับคียบอร์ด */
+.btn:focus{outline:2px solid rgba(0,179,255,0.15);outline-offset:2px}
+
+/* เพิ่มสไตล์สำหรับ .brand-img และ .preview-img (ตำแหน่ง/ขนาด/ซ่อนบนมือถือถ้าต้องการ) */
+.brand-img{
+	width:36px;height:36px;object-fit:contain;border-radius:6px;box-shadow:0 6px 14px rgba(0,0,0,0.6);display:inline-block;
+}
+/* รูปตัวอย่างใน preview ให้อยู่เบื้องหลัง SVG แถบสี (opacity/size ปรับได้) */
+.preview-img{
+	position:absolute;left:12px;top:8px;width:70%;height:auto;opacity:0.12;pointer-events:none;z-index:1;border-radius:6px;
+}
+
+/* ซ่อนรูปตกแต่งบนหน้าจอเล็ก (ถ้าต้องการ) */
+@media (max-width:600px){
+	.preview-img{display:none}
+}
+
+/* เพิ่มสไตล์สำหรับ gallery/thumbnail (เล็ก ๆ ไม่รบกวนธีมเดิม) */
+.image-gallery{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.img-thumb-wrap{position:relative;width:84px;height:64px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.04);background:#061018}
+.img-thumb{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+.img-thumb-actions{position:absolute;right:6px;top:6px;display:flex;gap:6px}
+.img-thumb-actions button{padding:4px 6px;font-size:0.75rem;border-radius:6px}
+.img-thumb .meta{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,0.35);color:var(--muted);padding:2px 6px;border-radius:6px;font-size:0.75rem}
+
+/* ให้ preview-img อยู่ด้านหลังแถบสี (อยู่แล้ว) */
+.preview-img{position:absolute;left:12px;top:8px;width:70%;height:auto;opacity:0.12;pointer-events:none;z-index:1;border-radius:6px}
+.image-tools .btn{margin-right:8px}
+
+/* เพิ่ม animation กระพริบ */
+@keyframes glow {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0.3; }
+}
+
+@keyframes bulbGlow {
+  0% { opacity: 0.6; filter: brightness(0.9); }
+  50% { opacity: 1; filter: brightness(1.3); }
+  100% { opacity: 0.6; filter: brightness(0.9); }
+}
+
+.calculator {
+  position: relative;
+  background: linear-gradient(180deg, #0a0a0a, #050505);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 
+    0 6px 20px rgba(0,0,0,0.6),
+    inset 0 0 60px rgba(255,140,0,0.1);
+  overflow: hidden;
+}
+
+/* เพิ่มพื้นหลังหลอดไฟ */
+.calculator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    /* หลอดไฟดวงใหญ่ */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 24 24' fill='rgba(255,140,0,0.15)'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7z' stroke='rgba(255,140,0,0.5)' stroke-width='1'/%3E%3Cpath d='M9 21h6' stroke='rgba(255,140,0,0.5)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M12 18v3' stroke='rgba(255,140,0,0.5)' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+  background-position: center 20%;
+  background-repeat: no-repeat;
+  animation: bulbGlow 3s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 0;
+  filter: drop-shadow(0 0 20px rgba(255,140,0,0.4));
+}
+
+/* เพิ่มเอฟเฟกต์เรืองแสงเป็นชั้น */
+.calculator::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(255,140,0,0.15) 0%,
+      rgba(255,140,0,0.05) 30%,
+      transparent 70%
+    );
+  animation: bulbGlow 4s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+
+.calculator > * {
+  position: relative;
+  z-index: 2;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero{
+	display:block;
+	max-width:1200px;
+	margin:18px auto;
+	border-radius:12px;
+	overflow:hidden;
+	position:relative;
+	box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+}
+
+/* ลิงก์ครอบทั้งหมด */
+.hero-link{display:block;text-decoration:none;color:inherit;position:relative;}
+
+/* ภาพตัวจริง */
+.hero-img{
+	width:100%;
+	height:320px;
+	object-fit:cover;
+	display:block;
+	transition: transform 0.6s ease, filter 0.6s ease;
+	transform-origin:center;
+	filter: contrast(1.02) saturate(1.05);
+}
+
+/* overlay ช่วงกลางเป็นกราเดียนเพื่อให้อ่าน caption ได้ง่าย */
+.hero-overlay{
+	position:absolute;inset:0;
+	background:linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.55) 100%);
+	pointer-events:none;
+}
+
+/* caption บนภาพ */
+.hero-caption{
+	position:absolute;left:18px;bottom:16px;color:#fff;z-index:4;
+	text-shadow:0 6px 18px rgba(0,0,0,0.6);
+}
+.hero-title{font-weight:700;font-size:1.05rem;line-height:1;}
+.hero-sub{font-size:0.85rem;color:rgba(255,255,255,0.85);margin-top:4px}
+
+/* hover effect: ซูมเล็กน้อย */
+.hero-link:hover .hero-img,
+.hero-link:focus .hero-img{
+	transform: scale(1.03);
+	filter: contrast(1.06) saturate(1.12);
+}
+
+/* responsive: ให้สูงน้อยลงบนมือถือ */
+@media (max-width:700px){
+	.hero-img{height:200px}
+	.hero-caption{left:12px;bottom:12px}
+}
+
+/* เล็กน้อยสำหรับโหมดมืด / ให้ blend กับธีม */
+.hero-overlay{mix-blend-mode:multiply;}
+
+/* ซ่อนข้อความสำหรับผู้ใช้ปกติ แต่ยังให้ screen reader อ่านได้ */
+.sr-only {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	clip: rect(0, 0, 0, 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+}
+
+/* Removed credit styles (no bottom-right text/light) */
+/* .credit, .credit-text, .credit-light and @keyframes creditFlicker were removed */
